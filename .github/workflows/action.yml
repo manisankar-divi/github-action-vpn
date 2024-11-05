@@ -1,0 +1,49 @@
+name: 'GitHub Action VPN'
+on:
+  workflow_dispatch:  # Trigger manually
+author: 'Unknow.sk'
+description: 'Establish OpenVPN, PPTP, L2TP, WireGuard, FortiClient or Cisco AnyConnect VPN connection on GitHub Actions.'
+branding:
+  icon: "shield"
+  color: "gray-dark"
+inputs:
+  VPN_OS:
+    description: 'Type of OS on which the commands will be executed. Supported "ubuntu" (default).'
+    default: 'ubuntu'
+    required: false
+  VPN_TYPE:
+    description: 'Type of VPN connection. Supported "pptp", "l2tp", "wireguard", "forticlient", "cisco", or "openvpn" (default).'
+    default: 'l2tp'  # Fixed to use quotes
+    required: false
+  VPN_USER:
+    description: 'Username for VPN connection.'
+    required: true
+  VPN_PASSWORD:
+    description: 'Password for VPN connection.'
+    required: true
+  VPN_SERVER:
+    description: 'Host name or IP address of VPN server.'
+    required: true
+  VPN_PSK:
+    description: 'Shared secret key for VPN connection. Required for L2TP.'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Echo VPN Inputs
+      if: ${{ inputs.VPN_OS == 'ubuntu' }}
+      run: |
+        echo "${{ github.action_path }}" >> $GITHUB_ACTION_PATH
+        echo "${{ inputs.VPN_OS }}" >> $VPN_OS
+        echo "${{ inputs.VPN_TYPE }}" >> $VPN_TYPE
+        echo "${{ inputs.VPN_USER }}" >> $VPN_USER
+        echo "${{ inputs.VPN_PASSWORD }}" >> $VPN_PASSWORD
+        echo "${{ inputs.VPN_SERVER }}" >> $VPN_SERVER
+        echo "${{ inputs.VPN_PSK }}" >> $VPN_PSK
+      shell: bash
+      
+    - id: vpn-l2tp
+      if: ${{ inputs.VPN_TYPE == 'l2tp' && inputs.VPN_OS == 'ubuntu' }}
+      run: script/l2tp.sh
+      shell: bash
